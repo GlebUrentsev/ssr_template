@@ -1,54 +1,72 @@
-import path from 'path';
-import { Configuration } from 'webpack';
-import { config } from 'dotenv';
-import HtmlWebpackPlugin from 'html-webpack-plugin';
-import MiniCssExtractPlugin from 'mini-css-extract-plugin';
-import LoadablePlugin from '@loadable/webpack-plugin';
+import path from "path";
+import { Configuration } from "webpack";
+import { config } from "dotenv";
+import HtmlWebpackPlugin from "html-webpack-plugin";
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
+import LoadablePlugin from "@loadable/webpack-plugin";
 
 config();
 
-const MODE = process.env.NODE_ENV || 'development';
+const MODE = process.env.NODE_ENV || "development";
 
 export const clientConfig: Configuration = {
   // @ts-ignore
   mode: MODE,
-  devtool: 'inline-source-map',
+  devtool: "inline-source-map",
   entry: {
-    index: path.join(__dirname, '..', 'src', 'client', 'index.tsx'),
+    index: path.join(__dirname, "..", "src", "client", "index.tsx"),
   },
   output: {
-    path: path.join(__dirname, '..', 'dist'),
-    publicPath: '/',
-    filename: MODE === 'development' ? '[name].js' : '[name].[hash:8].js',
-    sourceMapFilename: '[name].[hash:8].map',
-    chunkFilename: '[id].[hash:8].js'
+    path: path.join(__dirname, "..", "dist"),
+    publicPath: "/",
+    filename: MODE === "development" ? "[name].js" : "[name].[hash:8].js",
+    sourceMapFilename: "[name].[hash:8].map",
+    chunkFilename: "[id].[hash:8].js",
   },
   plugins: [
     new LoadablePlugin(),
     new HtmlWebpackPlugin({
-      template: path.join(__dirname, '..', 'src', 'public', 'index.html'),
+      template: path.join(__dirname, "..", "src", "public", "index.html"),
       inject: true,
-      scriptLoading: 'defer',
+      scriptLoading: "defer",
     }),
-    new MiniCssExtractPlugin(
-      {
-        filename: MODE === 'development' ? '[name].css' : '[name].[hash].css',
-      },
-    ),
+    new MiniCssExtractPlugin({
+      filename: MODE === "development" ? "[name].css" : "[name].[hash].css",
+    }),
   ],
   optimization: {
     splitChunks: {
-      chunks: 'all',
+      chunks: "all",
     },
   },
   module: {
     rules: [
       {
         test: /\.(ts|tsx|js)$/,
-        use: ['babel-loader'],
+        use: ["babel-loader"],
         resolve: {
-          extensions: ['.ts', '.tsx', '.js', '.pcss'],
+          extensions: [".ts", ".tsx", ".js", ".pcss"],
         },
+      },
+      {
+        test: /\.css$/i,
+        use: [
+          {
+            loader: MiniCssExtractPlugin.loader,
+          },
+          {
+            loader: "css-loader",
+            options: {
+              modules: {
+                mode: "local",
+                exportGlobals: true,
+                localIdentName: "[path][name]__[local]--[hash:base64:5]",
+                context: path.resolve(__dirname, "src"),
+                hashPrefix: "my-custom-hash",
+              },
+            },
+          },
+        ],
       },
       {
         test: /\.pcss$/,
@@ -56,9 +74,9 @@ export const clientConfig: Configuration = {
           {
             loader: MiniCssExtractPlugin.loader,
           },
-          'css-loader',
+          "css-loader",
           {
-            loader: 'postcss-loader',
+            loader: "postcss-loader",
             options: {
               config: {
                 path: path.resolve(__dirname),

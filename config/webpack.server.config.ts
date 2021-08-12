@@ -3,6 +3,7 @@ import nodeExternals from "webpack-node-externals";
 import webpack, { Configuration } from "webpack";
 import { config } from "dotenv";
 import { CleanWebpackPlugin } from "clean-webpack-plugin";
+const ExtractCssChunks = require("extract-css-chunks-webpack-plugin");
 
 config();
 
@@ -26,7 +27,11 @@ export const serverConfig: Configuration = {
     __dirname: false,
     __filename: false,
   },
-  plugins: [new webpack.HotModuleReplacementPlugin(), new CleanWebpackPlugin()],
+  plugins: [
+    new webpack.HotModuleReplacementPlugin(),
+    new CleanWebpackPlugin(),
+    new ExtractCssChunks(),
+  ],
   optimization: {
     splitChunks: {
       chunks: "all",
@@ -40,6 +45,24 @@ export const serverConfig: Configuration = {
         resolve: {
           extensions: [".ts", ".tsx", ".js"],
         },
+      },
+      {
+        test: /\.css$/i,
+        use: [
+          ExtractCssChunks.loader,
+          {
+            loader: "css-loader",
+            options: {
+              modules: {
+                mode: "local",
+                exportGlobals: true,
+                localIdentName: "[path][name]__[local]--[hash:base64:5]",
+                context: path.resolve(__dirname, "src"),
+                hashPrefix: "my-custom-hash",
+              },
+            },
+          },
+        ],
       },
     ],
   },
